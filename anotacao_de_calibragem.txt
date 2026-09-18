@@ -1,7 +1,5 @@
-// Eram 20 pontos na lista (corrigido)
 const int NUM_PONTOS = 20;
 
-// Pontos organizados em ordem crescente pelo valor cru (ADC)
 PontoCalibracao curvaMQ2[NUM_PONTOS] = {
   {843, 0.1},
   {1019, 0.2},
