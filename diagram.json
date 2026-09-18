@@ -1,0 +1,104 @@
+{
+  "version": 1,
+  "author": "NICOLE LIECHESKI",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "wokwi-breadboard-mini", "id": "bb1", "top": 75.4, "left": -213.6, "attrs": {} },
+    { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": 0, "left": 0, "attrs": {} },
+    { "type": "wokwi-gas-sensor", "id": "gas1", "top": 2.7, "left": -213.8, "attrs": {} },
+    {
+      "type": "wokwi-dht22",
+      "id": "dht1",
+      "top": 52.8,
+      "left": -315.3,
+      "rotate": 270,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led1",
+      "top": 255.6,
+      "left": -226.6,
+      "attrs": { "color": "yellow", "flip": "" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led2",
+      "top": 255.6,
+      "left": -140.2,
+      "attrs": { "color": "green" }
+    },
+    { "type": "wokwi-led", "id": "led3", "top": 255.6, "left": -73, "attrs": { "color": "blue" } },
+    {
+      "type": "wokwi-resistor",
+      "id": "r1",
+      "top": 216,
+      "left": -77.35,
+      "rotate": 90,
+      "attrs": { "value": "220" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r2",
+      "top": 216,
+      "left": -144.55,
+      "rotate": 90,
+      "attrs": { "value": "220" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r3",
+      "top": 216,
+      "left": -230.95,
+      "rotate": 90,
+      "attrs": { "value": "220" }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "text1",
+      "top": 297.6,
+      "left": -268.8,
+      "attrs": { "text": "Sistema de\nVentilação" }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "text2",
+      "top": 307.2,
+      "left": -67.2,
+      "attrs": { "text": "Ar-condicionado" }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "text3",
+      "top": 307.2,
+      "left": -172.8,
+      "attrs": { "text": "Umidificador" }
+    }
+  ],
+  "connections": [
+    [ "esp:TX", "$serialMonitor:RX", "", [] ],
+    [ "esp:RX", "$serialMonitor:TX", "", [] ],
+    [ "esp:5V", "bb1:16t.e", "red", [ "h-33.41", "v-67.2", "h-28.8" ] ],
+    [ "gas1:GND", "bb1:17t.a", "black", [ "h0" ] ],
+    [ "dht1:GND", "bb1:17t.b", "black", [ "h0" ] ],
+    [ "dht1:VCC", "bb1:16t.d", "red", [ "h163.2", "v-9.6" ] ],
+    [ "esp:15", "dht1:SDA", "purple", [ "h14.44", "v-220.8", "h-336", "v163.3" ] ],
+    [ "esp:34", "gas1:AOUT", "purple", [ "h-33.41", "v-48" ] ],
+    [ "gas1:VCC", "esp:3V3", "red", [ "h9.6", "v-20.1" ] ],
+    [ "r3:1", "bb1:1b.j", "", [ "$bb" ] ],
+    [ "r2:1", "bb1:10b.j", "", [ "$bb" ] ],
+    [ "r1:1", "bb1:17b.j", "", [ "$bb" ] ],
+    [ "led1:A", "r3:2", "red", [ "h9.6", "v-46.8" ] ],
+    [ "led2:A", "r2:2", "red", [ "h9.6", "v-46.8" ] ],
+    [ "r1:2", "led3:A", "red", [ "h9.6", "v46.8" ] ],
+    [ "esp:GND.2", "bb1:17t.c", "black", [ "v-38.4", "h-119.96", "v115.2" ] ],
+    [ "esp:GND.1", "bb1:9b.f", "black", [ "h0" ] ],
+    [ "led1:C", "bb1:9b.g", "black", [ "h-9.2", "v-134.4" ] ],
+    [ "led2:C", "bb1:9b.h", "black", [ "h-9.2", "v-124.8" ] ],
+    [ "led3:C", "bb1:9b.i", "black", [ "h-9.2", "v-115.2" ] ],
+    [ "esp:2", "bb1:17b.i", "blue", [ "h-110.36", "v19.2" ] ],
+    [ "esp:4", "bb1:10b.h", "green", [ "h-119.96", "v28.8" ] ],
+    [ "esp:5", "bb1:1b.i", "gold", [ "h-119.96", "v28.8", "h-172.8", "v38.4" ] ]
+  ],
+  "dependencies": {}
+}
