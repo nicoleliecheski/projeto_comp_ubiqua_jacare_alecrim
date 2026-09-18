@@ -12,7 +12,7 @@ graph TD
         subgraph Atuadores
             AC((LED Azul <br/> Ar Cond.))
             UMI((LED Verde <br/> Umidificador))
-            VENT((LED Verm. <br/> Exaustor))
+            VENT((LED Verm. <br/> Ventilação))
         end
     end
 
