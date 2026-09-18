@@ -1,22 +1,22 @@
 graph TD
     %% Definição das camadas
-    subgraph Edge [Camada de Borda / Hardware Simulado]
+    subgraph Edge [Hardware Simulado]
         direction TB
         subgraph Sensores
             DHT22[Sensor DHT22 <br/> Temperatura e Umidade]
-            MQ2[Sensor MQ2 <br/> Gás / Fumaça]
+            MQ2[Sensor MQ2 <br/> Gás]
         end
 
         ESP32[Microcontrolador ESP32 <br/> WiFi Habilitado]
 
         subgraph Atuadores
-            AC((LED Azul <br/> Ar Cond.))
+            AC((LED Azul <br/> Ar-condicionado))
             UMI((LED Verde <br/> Umidificador))
-            VENT((LED Verm. <br/> Ventilação))
+            VENT((LED Amarelo <br/> Ventilação))
         end
     end
 
-    subgraph Nuvem [Camada de Nuvem / ThingSpeak]
+    subgraph Nuvem [ThingSpeak]
         TS[(Banco de Dados <br/> IoT ThingSpeak)]
     end
 
