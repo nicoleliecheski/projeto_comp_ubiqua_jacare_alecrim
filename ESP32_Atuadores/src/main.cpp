@@ -1,7 +1,8 @@
 #include <WiFi.h>
 #include <PubSubClient.h>
 #include <WiFiClientSecure.h>
-  
+#include <ArduinoJson.h> 
+
 const char * PROGMEM thingspeak_ca_cert = \
   "-----BEGIN CERTIFICATE-----\n" \
   "MIIDjjCCAnagAwIBAgIQAzrx5qcRqaC7KGSxHQn65TANBgkqhkiG9w0BAQsFADBh\n" \
@@ -62,16 +63,24 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
   }
   Serial.println();
 
-  if (message.indexOf("field1") > 0){
-    int a = message.indexOf("field1");
-    Serial.println("temperatura: " + message + " °C");
-    t = message.toFloat();
-  } else if (message.indexOf("field2") > 0) {
-    Serial.println("umidade: " + message + " %");
-    h = message.toFloat();
-  } else if (message.indexOf("field3") > 0) {
-    Serial.println("gas: " + message + " PPM");
-    ppm = message.toFloat();
+  JsonDocument j;
+  deserializeJson(j,message);
+
+  String strT = String(j["field1"]);
+  String strH = String(j["field2"]);
+  String strPPM = String(j["field3"]);
+
+  if (strT != "null"){
+    Serial.println("temperatura: " + strT + " °C");
+    t = strT.toFloat();
+  }
+  if (strH != "null") {
+    Serial.println("umidade: " + strH + " %");
+    h = strH.toFloat();
+  }
+  if (strPPM != "null") {
+    Serial.println("gas: " + strPPM + " PPM");
+    ppm = strPPM.toFloat();
   }
 }
  
