@@ -142,7 +142,9 @@ void setup() {
   mqttClient.setServer( server, mqttPort ); 
 
   client.setCACert(thingspeak_ca_cert);
-  
+
+  mqttClient.setCallback(mqttCallback);
+  mqttClient.setBufferSize( 2048 );
 }
 
 void loop() {
@@ -180,32 +182,32 @@ void loop() {
   Serial.println("delay 15s");
   delay(15000);
 
-  if(estadoAC == 2){
-    Serial.println("ar-condicionado no estado inicial");
-  } else if((t > 28.0 && estadoAC == 1) || (t <= 28.0 && estadoAC == 0)){
-    Serial.println("ar-condicionado se comportou como esperado");
-  } else{
-    Serial.print("ar-condicionado nao se comportou como esperado: t = ");
-    Serial.println(String(t) + " estadoAC = " + String(estadoAC));
-  }
+  // if(estadoAC == 2){
+  //   Serial.println("ar-condicionado no estado inicial");
+  // } else if((t > 28.0 && estadoAC == 1) || (t <= 28.0 && estadoAC == 0)){
+  //   Serial.println("ar-condicionado se comportou como esperado");
+  // } else{
+  //   Serial.print("ar-condicionado nao se comportou como esperado: t = ");
+  //   Serial.println(String(t) + " estadoAC = " + String(estadoAC));
+  // }
 
-  if(estadoUMI == 2){
-    Serial.println("umidificador no estado inicial");
-  } else if((h < 40.0 && estadoUMI == 1) || (h >= 40.0 && estadoUMI == 0)){
-    Serial.println("umidificador se comportou como esperado");
-  } else{
-    Serial.print("umidificador nao se comportou como esperado: h = ");
-    Serial.println(String(h) + " estadoUMI = " + String(estadoUMI));
-  }
+  // if(estadoUMI == 2){
+  //   Serial.println("umidificador no estado inicial");
+  // } else if((h < 40.0 && estadoUMI == 1) || (h >= 40.0 && estadoUMI == 0)){
+  //   Serial.println("umidificador se comportou como esperado");
+  // } else{
+  //   Serial.print("umidificador nao se comportou como esperado: h = ");
+  //   Serial.println(String(h) + " estadoUMI = " + String(estadoUMI));
+  // }
   
-  if(estadoVENT == 2){
-    Serial.println("ventilacao no estado inicial");
-  } else if((ppm > 2000.0 && estadoVENT == 1) || (ppm <= 2000.0 && estadoVENT == 0)){
-    Serial.println("ventilacao se comportou como esperado");
-  } else{
-    Serial.print("ventilacao nao se comportou como esperado: ppm = ");
-    Serial.println(String(ppm) + " estadoVENT = " + String(estadoVENT));
-  }
+  // if(estadoVENT == 2){
+  //   Serial.println("ventilacao no estado inicial");
+  // } else if((ppm > 2000.0 && estadoVENT == 1) || (ppm <= 2000.0 && estadoVENT == 0)){
+  //   Serial.println("ventilacao se comportou como esperado");
+  // } else{
+  //   Serial.print("ventilacao nao se comportou como esperado: ppm = ");
+  //   Serial.println(String(ppm) + " estadoVENT = " + String(estadoVENT));
+  // }
 
   Serial.println("\n----\n");
 }

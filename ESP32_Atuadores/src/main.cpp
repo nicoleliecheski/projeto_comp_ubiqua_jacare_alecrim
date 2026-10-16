@@ -55,13 +55,21 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
   String topicStr = String(topic);
 
   Serial.println("novo dado recebido\n");
-  if (topicStr.indexOf("field1") > 0) {
+  Serial.print(topic);
+  Serial.print("] ");
+  for (int i = 0; i < length; i++) {
+    Serial.print((char)payload[i]);
+  }
+  Serial.println();
+
+  if (message.indexOf("field1") > 0){
+    int a = message.indexOf("field1");
     Serial.println("temperatura: " + message + " °C");
     t = message.toFloat();
-  } else if (topicStr.indexOf("field2") > 0) {
+  } else if (message.indexOf("field2") > 0) {
     Serial.println("umidade: " + message + " %");
     h = message.toFloat();
-  } else if (topicStr.indexOf("field3") > 0) {
+  } else if (message.indexOf("field3") > 0) {
     Serial.println("gas: " + message + " PPM");
     ppm = message.toFloat();
   }
@@ -139,6 +147,7 @@ void setup() {
   client.setCACert(thingspeak_ca_cert);
   
   mqttClient.setCallback(mqttCallback);
+  mqttClient.setBufferSize( 2048 );
 }
 
 void loop() {
@@ -158,7 +167,7 @@ void loop() {
 
   int ligarAC = 0;
   if(t == -100.0){
-    Serial.println("dado inicial");
+    //Serial.println("dado inicial");
   } else if(t < -40.0 || t > 80.0){
     Serial.print("dado invalido de temperatura ");
     Serial.println(t);
@@ -168,7 +177,7 @@ void loop() {
 
   int ligarUmi = 0;
   if(h == -100.0){
-    Serial.println("dado inicial");
+    //Serial.println("dado inicial");
   } else if(h < 0.0 || h > 100.0){
     Serial.println("dado invalido de humidade");
   } else{
@@ -177,7 +186,7 @@ void loop() {
 
   int ligarVent = 0;
   if(ppm == -100.0){
-    Serial.println("dado inicial");
+    //Serial.println("dado inicial");
   } else if(ppm < 0.1 || ppm > 100000.0){
     Serial.println("dado invalido de gas inflamavel");
   } else{
@@ -188,8 +197,8 @@ void loop() {
   digitalWrite(PIN_UMI, ligarUmi);
   digitalWrite(PIN_VENT, ligarVent);
 
-  mqttPublish(ligarAC, ligarUmi, ligarVent);
+  //mqttPublish(ligarAC, ligarUmi, ligarVent);
   
-  delay(10000); 
-  Serial.println("\n----\n");
+  //delay(1000); 
+  //Serial.println("\n----\n");
 }
