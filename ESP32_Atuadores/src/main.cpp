@@ -46,7 +46,6 @@ float t = -100.00;
 float h = -100.00;
 float ppm = -100.0;
 
-// Função que é acionada automaticamente sempre que o ThingSpeak envia um novo dado
 void mqttCallback(char* topic, byte* payload, unsigned int length) {
   String message = "";
   for (int i = 0; i < length; i++) {
@@ -55,7 +54,7 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
 
   String topicStr = String(topic);
 
-  Serial.println("----- Novo dado recebido -----");
+  Serial.println("novo dado recebido\n");
   if (topicStr.indexOf("field1") > 0) {
     Serial.println("temperatura: " + message + " °C");
     t = message.toFloat();
