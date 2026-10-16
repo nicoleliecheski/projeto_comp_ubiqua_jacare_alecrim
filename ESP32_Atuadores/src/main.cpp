@@ -1,6 +1,4 @@
 #include <WiFi.h>
-#include "DHT.h"
-#include <math.h>
 #include <PubSubClient.h>
 #include <WiFiClientSecure.h>
   
@@ -35,21 +33,41 @@ const char* password = "";
 
 const char* server = "mqtt3.thingspeak.com";
 int status = WL_IDLE_STATUS; 
-long lastPublishMillis = 0;
 int connectionDelay = 1;
-int updateInterval = 15;
 PubSubClient mqttClient( client );
 
-const char* mqtt_client_id = "CQwCCDQkLj0ALgUfPRoXEi8";
-const char* mqtt_username  = "CQwCCDQkLj0ALgUfPRoXEi8";
-const char* mqtt_password  = "5AXyB//pVstosEuFmkVDONq/";
+const char* mqtt_client_id = "JBchHxsRBhkaIBotNRElKC8";
+const char* mqtt_username  = "JBchHxsRBhkaIBotNRElKC8";
+const char* mqtt_password  = "bYk8vCfT7wvFfHtlJP/xSjVK";
 
 #define channelID 3499366
 
-#define DHTPIN 26
-#define DHTTYPE DHT22
-DHT dht(DHTPIN, DHTTYPE);
-#define MQ2PIN 34         
+float t = -100.00;
+float h = -100.00;
+float ppm = -100.0;
+
+// Função que é acionada automaticamente sempre que o ThingSpeak envia um novo dado
+void mqttCallback(char* topic, byte* payload, unsigned int length) {
+  String message = "";
+  for (int i = 0; i < length; i++) {
+    message += (char)payload[i];
+  }
+
+  String topicStr = String(topic);
+
+  Serial.println("----- Novo dado recebido -----");
+  if (topicStr.indexOf("field1") > 0) {
+    Serial.println("temperatura: " + message + " °C");
+    t = message.toFloat();
+  } else if (topicStr.indexOf("field2") > 0) {
+    Serial.println("umidade: " + message + " %");
+    h = message.toFloat();
+  } else if (topicStr.indexOf("field3") > 0) {
+    Serial.println("gas: " + message + " PPM");
+    ppm = message.toFloat();
+  }
+}
+ 
 
 void mqttPublish(float t, float h, float ppm, int ligarAC, int ligarUmi, int ligarVent) {
   String topicString ="channels/" + String(channelID) + "/publish";
@@ -99,19 +117,20 @@ void connectWifi() {
   Serial.println("wifi conectado\n");
 }
 
-float calcularPPM(int valorCru) {
-  if (valorCru <= 843) return 0.1;
-  if (valorCru >= 4041) return 100000.0;
-  float ratio = (4095.0 / (float)valorCru) - 1.0;
-  return pow(10, (-2.478 * log10(ratio) + 0.356));
-}
+#define PIN_AC 2       
+#define PIN_UMI 4      
+#define PIN_VENT 5 
 
 void setup() {
   Serial.begin(115200);
-  
-  dht.begin();
-  analogSetPinAttenuation(MQ2PIN, ADC_11db);
-  pinMode(MQ2PIN, INPUT);
+  Serial.println("teste\n");
+
+  pinMode(PIN_AC, OUTPUT);
+  pinMode(PIN_UMI, OUTPUT);
+  pinMode(PIN_VENT, OUTPUT);
+  digitalWrite(PIN_AC, LOW);
+  digitalWrite(PIN_UMI, LOW);
+  digitalWrite(PIN_VENT, LOW);
 
   connectWifi();
 
@@ -120,6 +139,7 @@ void setup() {
 
   client.setCACert(thingspeak_ca_cert);
   
+  mqttClient.setCallback(mqttCallback);
 }
 
 void loop() {
@@ -137,21 +157,37 @@ void loop() {
   // Call the loop to maintain connection to the server.
   mqttClient.loop();
 
-  Serial.println("etapa 1: gravando no thingspeak");
-  float t = dht.readTemperature();
-  float h = dht.readHumidity();
-  float ppm = calcularPPM(analogRead(MQ2PIN));
-
-  if (!isnan(t) && !isnan(h)) {
-    int ligarAC = (t > 28.0) ? 1 : 0;        
-    int ligarUmi = (h < 40.0) ? 1 : 0;       
-    int ligarVent = (ppm > 2000.0) ? 1 : 0;  
-    
-    mqttPublish(t, h, ppm, ligarAC, ligarUmi, ligarVent);
+  int ligarAC = 0;
+  if(t == -100.0){
+    Serial.println("dado inicial");
+  } else if(t < -40.0 || t > 80.0){
+    Serial.print("dado invalido de temperatura ");
+    Serial.println(t);
+  } else{
+    ligarAC = (t > 28.0) ? 1 : 0;
   }
 
-  Serial.println("delay 15s");
-  delay(15000);
+  int ligarUmi = 0;
+  if(h == -100.0){
+    Serial.println("dado inicial");
+  } else if(h < 0.0 || h > 100.0){
+    Serial.println("dado invalido de humidade");
+  } else{
+    ligarUmi = (h < 40.0) ? 1 : 0;
+  }
 
+  int ligarVent = 0;
+  if(ppm == -100.0){
+    Serial.println("dado inicial");
+  } else if(ppm < 0.1 || ppm > 100000.0){
+    Serial.println("dado invalido de gas inflamavel");
+  } else{
+    ligarVent = (ppm > 2000.0) ? 1 : 0;
+  }
+
+  digitalWrite(PIN_AC, ligarAC);
+  digitalWrite(PIN_UMI, ligarUmi);
+  digitalWrite(PIN_VENT, ligarVent);
+  
   Serial.println("\n----\n");
 }
