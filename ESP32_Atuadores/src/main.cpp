@@ -68,10 +68,10 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
 }
  
 
-void mqttPublish(float t, float h, float ppm, int ligarAC, int ligarUmi, int ligarVent) {
+void mqttPublish(int ligarAC, int ligarUmi, int ligarVent) {
   String topicString ="channels/" + String(channelID) + "/publish";
 
-  String payload = "field1=" + String(t) + "&field2=" + String(h) + "&field3=" + String(ppm) + "&field4=" + String(ligarAC) + "&field5=" + String(ligarUmi) + "&field6=" + String(ligarVent);
+  String payload = "field4=" + String(ligarAC) + "&field5=" + String(ligarUmi) + "&field6=" + String(ligarVent);
 
   if(mqttClient.publish(topicString.c_str(), payload.c_str())){
     Serial.println("envio sucesso");
@@ -187,6 +187,8 @@ void loop() {
   digitalWrite(PIN_AC, ligarAC);
   digitalWrite(PIN_UMI, ligarUmi);
   digitalWrite(PIN_VENT, ligarVent);
+
+  mqttPublish(ligarAC, ligarUmi, ligarVent);
   
   Serial.println("\n----\n");
 }

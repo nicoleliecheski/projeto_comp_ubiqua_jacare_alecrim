@@ -35,9 +35,7 @@ const char* password = "";
 
 const char* server = "mqtt3.thingspeak.com";
 int status = WL_IDLE_STATUS; 
-long lastPublishMillis = 0;
 int connectionDelay = 1;
-int updateInterval = 15;
 PubSubClient mqttClient( client );
 
 const char* mqtt_client_id = "CQwCCDQkLj0ALgUfPRoXEi8";
@@ -51,15 +49,40 @@ const char* mqtt_password  = "5AXyB//pVstosEuFmkVDONq/";
 DHT dht(DHTPIN, DHTTYPE);
 #define MQ2PIN 34         
 
-void mqttPublish(float t, float h, float ppm, int ligarAC, int ligarUmi, int ligarVent) {
+void mqttPublish(float t, float h, float ppm) {
   String topicString ="channels/" + String(channelID) + "/publish";
 
-  String payload = "field1=" + String(t) + "&field2=" + String(h) + "&field3=" + String(ppm) + "&field4=" + String(ligarAC) + "&field5=" + String(ligarUmi) + "&field6=" + String(ligarVent);
+  String payload = "field1=" + String(t) + "&field2=" + String(h) + "&field3=" + String(ppm);
 
   if(mqttClient.publish(topicString.c_str(), payload.c_str())){
     Serial.println("envio sucesso");
   } else {
     Serial.println("erro no envio.");
+  }
+}
+
+int estadoAC = 2;
+int estadoUMI = 2;
+int estadoVENT = 2;
+
+void mqttCallback(char* topic, byte* payload, unsigned int length) {
+  String message = "";
+  for (int i = 0; i < length; i++) {
+    message += (char)payload[i];
+  }
+
+  String topicStr = String(topic);
+
+  Serial.println("novo dado recebido\n");
+  if (topicStr.indexOf("field4") > 0) {
+    Serial.println("ar-condicionado: " + message);
+    estadoAC = message.toInt();
+  } else if (topicStr.indexOf("field5") > 0) {
+    Serial.println("umidificador: " + message);
+    estadoUMI = message.toInt();
+  } else if (topicStr.indexOf("field6") > 0) {
+    Serial.println("ventilacao: " + message);
+    estadoVENT = message.toInt();
   }
 }
 
@@ -137,21 +160,52 @@ void loop() {
   // Call the loop to maintain connection to the server.
   mqttClient.loop();
 
-  Serial.println("etapa 1: gravando no thingspeak");
   float t = dht.readTemperature();
   float h = dht.readHumidity();
   float ppm = calcularPPM(analogRead(MQ2PIN));
 
-  if (!isnan(t) && !isnan(h)) {
-    int ligarAC = (t > 28.0) ? 1 : 0;        
-    int ligarUmi = (h < 40.0) ? 1 : 0;       
-    int ligarVent = (ppm > 2000.0) ? 1 : 0;  
-    
-    mqttPublish(t, h, ppm, ligarAC, ligarUmi, ligarVent);
+  if(t < -40.0 || t > 80.0){
+    Serial.print("dado invalido de temperatura ");
+    Serial.println(t);
+  } else if (h < 0.0 || h > 100.0){
+    Serial.print("dado invalido de humidade");
+    Serial.println(h);
+  } else if(ppm < 0.1 || ppm > 100000.0){
+    Serial.print("dado invalido de gas inflamavel");
+    Serial.println(ppm);
+  } else{
+    mqttPublish(t, h, ppm);
   }
 
   Serial.println("delay 15s");
   delay(15000);
+
+  if(estadoAC == 2){
+    Serial.println("ar-condicionado no estado inicial");
+  } else if((t > 28.0 && estadoAC == 1) || (t <= 28.0 && estadoAC == 0)){
+    Serial.println("ar-condicionado se comportou como esperado");
+  } else{
+    Serial.print("ar-condicionado nao se comportou como esperado: t = ");
+    Serial.println(String(t) + " estadoAC = " + String(estadoAC));
+  }
+
+  if(estadoUMI == 2){
+    Serial.println("umidificador no estado inicial");
+  } else if((h < 40.0 && estadoUMI == 1) || (h >= 40.0 && estadoUMI == 0)){
+    Serial.println("umidificador se comportou como esperado");
+  } else{
+    Serial.print("umidificador nao se comportou como esperado: h = ");
+    Serial.println(String(h) + " estadoUMI = " + String(estadoUMI));
+  }
+  
+  if(estadoVENT == 2){
+    Serial.println("ventilacao no estado inicial");
+  } else if((ppm > 2000.0 && estadoVENT == 1) || (ppm <= 2000.0 && estadoVENT == 0)){
+    Serial.println("ventilacao se comportou como esperado");
+  } else{
+    Serial.print("ventilacao nao se comportou como esperado: ppm = ");
+    Serial.println(String(ppm) + " estadoVENT = " + String(estadoVENT));
+  }
 
   Serial.println("\n----\n");
 }
