@@ -190,5 +190,6 @@ void loop() {
 
   mqttPublish(ligarAC, ligarUmi, ligarVent);
   
+  delay(10000); 
   Serial.println("\n----\n");
 }
