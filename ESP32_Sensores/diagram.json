@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "author": "NICOLE LIECHESKI",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "wokwi-breadboard-mini", "id": "bb1", "top": 75.4, "left": -213.6, "attrs": {} },
+    { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": 0, "left": -4.76, "attrs": {} },
+    { "type": "wokwi-gas-sensor", "id": "gas1", "top": 2.7, "left": -213.8, "attrs": {} },
+    {
+      "type": "wokwi-dht22",
+      "id": "dht1",
+      "top": 52.8,
+      "left": -315.3,
+      "rotate": 270,
+      "attrs": { "temperature": "58.6", "humidity": "8" }
+    }
+  ],
+  "connections": [
+    [ "esp:TX", "$serialMonitor:RX", "", [] ],
+    [ "esp:RX", "$serialMonitor:TX", "", [] ],
+    [ "gas1:GND", "bb1:17t.a", "black", [ "h0" ] ],
+    [ "dht1:GND", "bb1:17t.b", "black", [ "h0" ] ],
+    [ "esp:34", "gas1:AOUT", "purple", [ "h-33.41", "v-48" ] ],
+    [ "gas1:VCC", "esp:3V3", "red", [ "h9.6", "v-20.1" ] ],
+    [ "dht1:VCC", "esp:5V", "red", [ "h9.6", "v9.6", "h192", "v67.2" ] ],
+    [ "dht1:SDA", "esp:26", "purple", [ "h0" ] ],
+    [ "esp:GND.1", "bb1:17t.c", "black", [ "h-19.05", "v-48" ] ]
+  ],
+  "dependencies": {}
+}
