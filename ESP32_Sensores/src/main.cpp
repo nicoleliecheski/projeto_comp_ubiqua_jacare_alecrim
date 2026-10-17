@@ -3,6 +3,7 @@
 #include <math.h>
 #include <PubSubClient.h>
 #include <WiFiClientSecure.h>
+#include <ArduinoJson.h> 
   
 const char * PROGMEM thingspeak_ca_cert = \
   "-----BEGIN CERTIFICATE-----\n" \
@@ -42,7 +43,8 @@ const char* mqtt_client_id = "CQwCCDQkLj0ALgUfPRoXEi8";
 const char* mqtt_username  = "CQwCCDQkLj0ALgUfPRoXEi8";
 const char* mqtt_password  = "5AXyB//pVstosEuFmkVDONq/";
 
-#define channelID 3499366
+#define SensoresChannelID 3499366
+#define AtuadoresChannelID 3540202
 
 #define DHTPIN 26
 #define DHTTYPE DHT22
@@ -50,7 +52,7 @@ DHT dht(DHTPIN, DHTTYPE);
 #define MQ2PIN 34         
 
 void mqttPublish(float t, float h, float ppm) {
-  String topicString ="channels/" + String(channelID) + "/publish";
+  String topicString ="channels/" + String(SensoresChannelID) + "/publish";
 
   String payload = "field1=" + String(t) + "&field2=" + String(h) + "&field3=" + String(ppm);
 
@@ -73,16 +75,33 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
 
   String topicStr = String(topic);
 
-  Serial.println("novo dado recebido\n");
-  if (topicStr.indexOf("field4") > 0) {
-    Serial.println("ar-condicionado: " + message);
-    estadoAC = message.toInt();
-  } else if (topicStr.indexOf("field5") > 0) {
-    Serial.println("umidificador: " + message);
-    estadoUMI = message.toInt();
-  } else if (topicStr.indexOf("field6") > 0) {
-    Serial.println("ventilacao: " + message);
-    estadoVENT = message.toInt();
+  //Serial.println("novo dado recebido\n");
+  //Serial.print(topic);
+  //Serial.print("] ");
+  //for (int i = 0; i < length; i++) {
+    //Serial.print((char)payload[i]);
+  //}
+  //Serial.println();
+
+  JsonDocument j;
+  deserializeJson(j,message);
+
+  String strAC = String(j["field1"]);
+  String strUMI = String(j["field2"]);
+  String strVENT = String(j["field3"]);
+
+  if (strAC != "null"){
+    Serial.println("novo dado recebido\n");
+    Serial.println("ar-condicionado: " + strAC);
+    estadoAC = strAC.toFloat();
+  }
+  if (strUMI != "null") {
+    Serial.println("umidificador: " + strUMI);
+    estadoUMI = strUMI.toFloat();
+  }
+  if (strVENT != "null") {
+    Serial.println("ventilacao: " + strVENT);
+    estadoVENT = strVENT.toFloat();
   }
 }
 
@@ -109,7 +128,7 @@ void mqttConnect() {
 
 // Subscribe to ThingSpeak channel for updates.
 void mqttSubscribe(){
-  String myTopic = "channels/"+String(channelID)+"/subscribe";
+  String myTopic = "channels/"+String(AtuadoresChannelID)+"/subscribe";
   mqttClient.subscribe(myTopic.c_str());
 }
 
@@ -179,35 +198,37 @@ void loop() {
     mqttPublish(t, h, ppm);
   }
 
-  Serial.println("delay 15s");
-  delay(15000);
+  delay(7000);
 
-  // if(estadoAC == 2){
-  //   Serial.println("ar-condicionado no estado inicial");
-  // } else if((t > 28.0 && estadoAC == 1) || (t <= 28.0 && estadoAC == 0)){
-  //   Serial.println("ar-condicionado se comportou como esperado");
-  // } else{
-  //   Serial.print("ar-condicionado nao se comportou como esperado: t = ");
-  //   Serial.println(String(t) + " estadoAC = " + String(estadoAC));
-  // }
+ if(estadoAC == 2){
+   Serial.println("ar-condicionado no estado inicial");
+ } else if((t > 28.0 && estadoAC == 1) || (t <= 28.0 && estadoAC == 0)){
+   Serial.println("ar-condicionado se comportou como esperado");
+ } else{
+   Serial.print("ar-condicionado nao se comportou como esperado: t = ");
+   Serial.println(String(t) + " estadoAC = " + String(estadoAC));
+ }
 
-  // if(estadoUMI == 2){
-  //   Serial.println("umidificador no estado inicial");
-  // } else if((h < 40.0 && estadoUMI == 1) || (h >= 40.0 && estadoUMI == 0)){
-  //   Serial.println("umidificador se comportou como esperado");
-  // } else{
-  //   Serial.print("umidificador nao se comportou como esperado: h = ");
-  //   Serial.println(String(h) + " estadoUMI = " + String(estadoUMI));
-  // }
+ if(estadoUMI == 2){
+   Serial.println("umidificador no estado inicial");
+ } else if((h < 40.0 && estadoUMI == 1) || (h >= 40.0 && estadoUMI == 0)){
+   Serial.println("umidificador se comportou como esperado");
+ } else{
+   Serial.print("umidificador nao se comportou como esperado: h = ");
+   Serial.println(String(h) + " estadoUMI = " + String(estadoUMI));
+ }
   
-  // if(estadoVENT == 2){
-  //   Serial.println("ventilacao no estado inicial");
-  // } else if((ppm > 2000.0 && estadoVENT == 1) || (ppm <= 2000.0 && estadoVENT == 0)){
-  //   Serial.println("ventilacao se comportou como esperado");
-  // } else{
-  //   Serial.print("ventilacao nao se comportou como esperado: ppm = ");
-  //   Serial.println(String(ppm) + " estadoVENT = " + String(estadoVENT));
-  // }
+ if(estadoVENT == 2){
+   Serial.println("ventilacao no estado inicial");
+ } else if((ppm > 2000.0 && estadoVENT == 1) || (ppm <= 2000.0 && estadoVENT == 0)){
+   Serial.println("ventilacao se comportou como esperado");
+ } else{
+   Serial.print("ventilacao nao se comportou como esperado: ppm = ");
+   Serial.println(String(ppm) + " estadoVENT = " + String(estadoVENT));
+ }
+
+  Serial.println("delay 15s");
+  delay(7000);
 
   Serial.println("\n----\n");
 }

@@ -41,7 +41,8 @@ const char* mqtt_client_id = "JBchHxsRBhkaIBotNRElKC8";
 const char* mqtt_username  = "JBchHxsRBhkaIBotNRElKC8";
 const char* mqtt_password  = "bYk8vCfT7wvFfHtlJP/xSjVK";
 
-#define channelID 3499366
+#define SensoresChannelID 3499366
+#define AtuadoresChannelID 3540202
 
 float t = -100.00;
 float h = -100.00;
@@ -55,13 +56,13 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
 
   String topicStr = String(topic);
 
-  Serial.println("novo dado recebido\n");
-  Serial.print(topic);
-  Serial.print("] ");
-  for (int i = 0; i < length; i++) {
-    Serial.print((char)payload[i]);
-  }
-  Serial.println();
+  //Serial.println("novo dado recebido\n");
+  //Serial.print(topic);
+  //Serial.print("] ");
+  //for (int i = 0; i < length; i++) {
+    //Serial.print((char)payload[i]);
+  //}
+  //Serial.println();
 
   JsonDocument j;
   deserializeJson(j,message);
@@ -71,6 +72,7 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
   String strPPM = String(j["field3"]);
 
   if (strT != "null"){
+    Serial.println("novo dado recebido\n");
     Serial.println("temperatura: " + strT + " °C");
     t = strT.toFloat();
   }
@@ -86,9 +88,11 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
  
 
 void mqttPublish(int ligarAC, int ligarUmi, int ligarVent) {
-  String topicString ="channels/" + String(channelID) + "/publish";
+  String topicString ="channels/" + String(AtuadoresChannelID) + "/publish";
 
-  String payload = "field4=" + String(ligarAC) + "&field5=" + String(ligarUmi) + "&field6=" + String(ligarVent);
+  String payload = "field1=" + String(ligarAC) + "&field2=" + String(ligarUmi) + "&field3=" + String(ligarVent);
+
+  //Serial.println(payload);
 
   if(mqttClient.publish(topicString.c_str(), payload.c_str())){
     Serial.println("envio sucesso");
@@ -120,7 +124,7 @@ void mqttConnect() {
 
 // Subscribe to ThingSpeak channel for updates.
 void mqttSubscribe(){
-  String myTopic = "channels/"+String(channelID)+"/subscribe";
+  String myTopic = "channels/"+String(SensoresChannelID)+"/subscribe";
   mqttClient.subscribe(myTopic.c_str());
 }
 
@@ -176,7 +180,7 @@ void loop() {
 
   int ligarAC = 0;
   if(t == -100.0){
-    //Serial.println("dado inicial");
+    Serial.println("dado inicial");
   } else if(t < -40.0 || t > 80.0){
     Serial.print("dado invalido de temperatura ");
     Serial.println(t);
@@ -186,7 +190,7 @@ void loop() {
 
   int ligarUmi = 0;
   if(h == -100.0){
-    //Serial.println("dado inicial");
+    Serial.println("dado inicial");
   } else if(h < 0.0 || h > 100.0){
     Serial.println("dado invalido de humidade");
   } else{
@@ -195,7 +199,7 @@ void loop() {
 
   int ligarVent = 0;
   if(ppm == -100.0){
-    //Serial.println("dado inicial");
+    Serial.println("dado inicial");
   } else if(ppm < 0.1 || ppm > 100000.0){
     Serial.println("dado invalido de gas inflamavel");
   } else{
@@ -206,8 +210,8 @@ void loop() {
   digitalWrite(PIN_UMI, ligarUmi);
   digitalWrite(PIN_VENT, ligarVent);
 
-  //mqttPublish(ligarAC, ligarUmi, ligarVent);
+  mqttPublish(ligarAC, ligarUmi, ligarVent);
   
-  //delay(1000); 
-  //Serial.println("\n----\n");
+  delay(7000); 
+  Serial.println("\n----\n");
 }
